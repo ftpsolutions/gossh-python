@@ -25,26 +25,24 @@ func handleReader(s *Session) {
 
 	for {
 		buf := make([]byte, 65536)
-		n, readErr := s.stdout.Read(buf)
+
+		n, readErr := io.ReadAtLeast(s.stdout, buf, 1)
 
 		if n > 0 {
 			s.bufMutex.Lock()
 			_, writeErr = s.buf.Write(buf)
 			s.bufMutex.Unlock()
+			if writeErr != nil {
+				panic(writeErr)
+			}
 		}
 
 		if readErr != nil {
-			if readErr == io.EOF {
-				continue
-			}
 			panic(readErr)
 		}
 
-		if writeErr != nil {
-			panic(writeErr)
-		}
-
 		if n == 0 {
+			time.Sleep(time.Millisecond * 100)
 			continue
 		}
 
