@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,9 +24,14 @@ type sessionInterface interface {
 func handleReader(s *Session) {
 	var writeErr error
 
-	for {
-		buf := make([]byte, 65536)
+	var buf []byte
 
+	s.wg.Add(1)
+
+	for {
+		buf = make([]byte, 65536)
+
+		fmt.Println("ReadAtLeast")
 		n, readErr := io.ReadAtLeast(s.stdout, buf, 1)
 
 		if n > 0 {
@@ -33,25 +39,34 @@ func handleReader(s *Session) {
 			_, writeErr = s.buf.Write(buf)
 			s.bufMutex.Unlock()
 			if writeErr != nil {
+				if readErr == io.EOF {
+					break
+				}
 				panic(writeErr)
 			}
 		}
 
 		if readErr != nil {
+			if readErr == io.EOF {
+				break
+			}
 			panic(readErr)
 		}
 
 		if n == 0 {
-			time.Sleep(time.Millisecond * 100)
 			continue
 		}
 
 		select {
 		case <-s.ctx.Done():
-			return
+			fmt.Println("done")
+			break
 		default:
+			fmt.Println("not done")
 		}
 	}
+
+	s.wg.Done()
 }
 
 // Session holds all the state for an SSH session
@@ -63,10 +78,11 @@ type Session struct {
 	addr      string
 	stdout    io.Reader
 	stdin     io.WriteCloser
-	ctx       context.Context
-	cancel    context.CancelFunc
+	ctx       context.Context // this is apparently bad form, so sayeth the Cheney
 	bufMutex  sync.Mutex
 	buf       bytes.Buffer
+	cancel    context.CancelFunc
+	wg        sync.WaitGroup
 }
 
 // NewSession creates a new session
@@ -168,6 +184,26 @@ func (s *Session) Read(size int) (string, error) {
 	return string(buf), nil
 }
 
+// ReadUntil reads until
+func (s *Session) ReadUntil(delimiter string) (string, error) {
+	var buf bytes.Buffer
+
+	for {
+		data, err := s.Read(1)
+		if err != nil {
+			return buf.String(), err
+		}
+
+		buf.WriteString(data)
+
+		if strings.HasSuffix(buf.String(), delimiter) {
+			break
+		}
+	}
+
+	return buf.String(), nil
+}
+
 // Write writes
 func (s *Session) Write(data string) error {
 	_, err := s.stdin.Write([]byte(data))
@@ -176,22 +212,22 @@ func (s *Session) Write(data string) error {
 }
 
 // Close closes
-func (s *Session) Close() error {
+func (s *Session) Close() (error, error) {
 	if !s.connected {
-		return nil
+		return nil, nil
 	}
+
+	s.connected = false
+
+	sessionCloseError := s.session.Close()
+	s.session = nil
+
+	connCloseError := s.conn.Close()
+	s.conn = nil
 
 	s.cancel()
 
-	err := s.session.Close()
-	if err != nil {
-		return err
-	}
+	s.wg.Wait()
 
-	err = s.conn.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return sessionCloseError, connCloseError
 }
