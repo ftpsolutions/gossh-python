@@ -44,7 +44,7 @@ There's no real reason why you'd want to do this (just use gossh on it's own)- i
 package main
 
 import (
-	"gosnmp_ssh"
+	"gossh_python"
 	"fmt"
     "time"
 )
@@ -119,6 +119,3 @@ print session.read()
 session.close()
 ```
  
-Some of this may feel a bit like [easysnmp](https://github.com/kamakazikamikaze/easysnmp); that's intentional, I was originally using that but I think its got some underlying thread-safety issues on the C side (particularly to do with SNMPv3).
-
-No offence to the guys that contribute to that project- it's served me very well.

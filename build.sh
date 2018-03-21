@@ -52,8 +52,8 @@ if [[ "$1" != "fast" ]]; then
     go build -x -a github.com/go-python/gopy
     echo ""
 
-    echo "building gosnmp_ssh"
-    go build -x -a gosnmp_ssh
+    echo "building gossh_python"
+    go build -x -a gossh_python
     echo ""
 fi
 
