@@ -5,7 +5,7 @@ The purpose of this module is to provide a Python interface to the Golang [ssh](
 It was made very easy with the help of the Golang [gopy](https://github.com/go-python/gopy) module.
 
 It has come about because I found Paramiko to be a bit unwieldy and have some odd behaviours under certain conditions (we connect to a lot of wireless devices that often have very poor connectivity); I've also done some testing with SSH2-Python but I think it's a bit too young (good performance when it worked, but odd behaviour that I couldn't explain from time-to-time, especially when comparing Python vs PyPy).
-s
+
 #### Limitations
 
 * Python command needs to be prefixed with GODEBUG=cgocheck=0 (or have that in the environment)
