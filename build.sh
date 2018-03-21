@@ -17,12 +17,12 @@ export GOPATH=`pwd`
 export PYTHONPATH=`pwd`/src/github.com/go-python/gopy/
 
 echo "cleaning up output folder"
-rm -frv gosnmp_ssh/*.pyc
-rm -frv gosnmp_ssh/py2/*.pyc
-rm -frv gosnmp_ssh/py2/gossh_python.so
-rm -frv gosnmp_ssh/cffi/*.pyc
-rm -frv gosnmp_ssh/cffi/_gossh_python.so
-rm -frv gosnmp_ssh/cffi/gossh_python.py
+rm -frv gossh_python/*.pyc
+rm -frv gossh_python/py2/*.pyc
+rm -frv gossh_python/py2/gossh_python.so
+rm -frv gossh_python/cffi/*.pyc
+rm -frv gossh_python/cffi/_gossh_python.so
+rm -frv gossh_python/cffi/gossh_python.py
 echo ""
 
 if [[ "$1" != "fast" ]]; then
@@ -64,7 +64,3 @@ echo ""
 echo "build gossh_python bindings for cffi"
 ./gopy bind -lang="cffi" -output="gossh_python/cffi" -symbols=true -work=false gossh_python
 echo ""
-
-echo "fix broken cffi output (this is yuck)"
-sed 's/py_kwd_011, \[\]int/py_kwd_011, list/g' gossh_python/cffi/gossh_python.py > temp.py
-mv temp.py gossh_python/cffi/gossh_python.py
