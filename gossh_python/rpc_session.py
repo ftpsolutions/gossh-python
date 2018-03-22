@@ -43,22 +43,20 @@ class RPCSession(object):
 
     def connect(self):
         return handle_exception(
-            RPCConnect, (self._session_id,)
+            RPCConnect, (self._session_id,), self
         )
 
     def get_shell(self):
-        return handle_exception(RPCGetShell, (self._session_id,))
+        return handle_exception(RPCGetShell, (self._session_id, ), self)
 
     def read(self, size=1024):
-        return handle_exception(RPCRead, (self._session_id, size,))
+        return handle_exception(RPCRead, (self._session_id, size), self)
 
     def write(self, data):
-        return handle_exception(RPCWrite, (self._session_id, data,))
+        return handle_exception(RPCWrite, (self._session_id, data.encode('ascii')), self)
 
     def close(self):
-        return handle_exception(
-            RPCClose, (self._session_id,),
-        )
+        return handle_exception(RPCClose, (self._session_id, ), self)
 
 
 def create_session(hostname, username, password, port=22, timeout=5):

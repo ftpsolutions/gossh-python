@@ -38,7 +38,7 @@ Right now I'm still working on how to put it all together as a Python module, so
 
 #### Example Go RPCSession usage (simple session ID, calls return strings)
 
-There's no real reason why you'd want to do this (just use gossh on it's own)- it's more for reference:
+There's no real reason why you'd want to do this (just use x/crypto/ssh on it's own)- it's more for reference:
 
 ```
 package main
