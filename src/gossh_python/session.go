@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"sync"
 	"time"
 
@@ -98,10 +99,24 @@ func (s *session) connect() error {
 		return nil
 	}
 
-	client, err := ssh.Dial("tcp", s.addr, s.config)
+	var err error
+
+	d := net.Dialer{
+		Timeout:   s.config.Timeout,
+		KeepAlive: s.config.Timeout,
+	}
+
+	conn, err := d.Dial("tcp", s.addr)
 	if err != nil {
 		return err
 	}
+
+	c, chans, reqs, err := ssh.NewClientConn(conn, s.addr, s.config)
+	if err != nil {
+		return err
+	}
+
+	client := ssh.NewClient(c, chans, reqs)
 
 	session, err := client.NewSession()
 	if err != nil {
@@ -160,10 +175,12 @@ func (s *session) getShell() error {
 
 func (s *session) read(size int) (string, error) {
 	s.errMutex.Lock()
-	if s.err != nil {
+	err := s.err
+	s.errMutex.Unlock()
+
+	if err != nil {
 		return "", s.err
 	}
-	s.errMutex.Unlock()
 
 	buf := make([]byte, size)
 
@@ -192,25 +209,21 @@ func (s *session) write(data string) error {
 }
 
 func (s *session) close() error {
-	if !s.connected {
-		return nil
+	if s.session != nil {
+		s.session.Close()
+		s.session = nil
 	}
 
-	s.connected = false
-
-	sessionCloseError := s.session.Close()
-	s.session = nil
-
-	connCloseError := s.client.Close()
-	s.client = nil
+	if s.client != nil {
+		s.client.Close()
+		s.client = nil
+	}
 
 	close(s.quit)
 
 	s.wg.Wait()
 
-	if sessionCloseError != nil {
-		return sessionCloseError
-	}
+	s.connected = false
 
-	return connCloseError
+	return nil
 }

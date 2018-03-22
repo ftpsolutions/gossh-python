@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var sessionMutex sync.RWMutex
+var sessionMutex sync.Mutex
 var sessions map[uint64]*session
 var lastSessionID uint64
 
@@ -66,9 +66,9 @@ func RPCConnect(sessionID uint64) error {
 
 	var err error
 
-	sessionMutex.RLock()
+	sessionMutex.Lock()
 	val, ok := sessions[sessionID]
-	sessionMutex.RUnlock()
+	sessionMutex.Unlock()
 
 	// permit recovering from a panic but return the error
 	defer func(s *session) {
@@ -98,9 +98,9 @@ func RPCGetShell(sessionID uint64) error {
 
 	var err error
 
-	sessionMutex.RLock()
+	sessionMutex.Lock()
 	val, ok := sessions[sessionID]
-	sessionMutex.RUnlock()
+	sessionMutex.Unlock()
 
 	// permit recovering from a panic but return the error
 	defer func(s *session) {
@@ -130,9 +130,9 @@ func RPCRead(sessionID uint64, size int) (string, error) {
 
 	var err error
 
-	sessionMutex.RLock()
+	sessionMutex.Lock()
 	val, ok := sessions[sessionID]
-	sessionMutex.RUnlock()
+	sessionMutex.Unlock()
 
 	// permit recovering from a panic but return the error
 	defer func(s *session) {
@@ -164,9 +164,9 @@ func RPCWrite(sessionID uint64, data string) error {
 
 	var err error
 
-	sessionMutex.RLock()
+	sessionMutex.Lock()
 	val, ok := sessions[sessionID]
-	sessionMutex.RUnlock()
+	sessionMutex.Unlock()
 
 	// permit recovering from a panic but return the error
 	defer func(s *session) {
@@ -194,12 +194,12 @@ func RPCClose(sessionID uint64) error {
 		defer reacquireGIL(tState)
 	}
 
-	sessionMutex.RLock()
+	sessionMutex.Lock()
 	val, ok := sessions[sessionID]
-	sessionMutex.RUnlock()
+	sessionMutex.Unlock()
 
 	if !ok {
-		return fmt.Errorf("sessionID %v does not exist; only %v", sessionID, sessions)
+		return nil
 	}
 
 	sessionMutex.Lock()
