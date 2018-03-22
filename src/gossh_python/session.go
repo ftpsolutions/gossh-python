@@ -219,7 +219,9 @@ func (s *session) close() error {
 		s.client = nil
 	}
 
-	close(s.quit)
+	if s.quit != nil {
+		close(s.quit)
+	}
 
 	s.wg.Wait()
 
