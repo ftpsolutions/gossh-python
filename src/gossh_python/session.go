@@ -26,12 +26,8 @@ func handleReader(s *session) {
 			_, writeErr = s.buf.Write(buf[0:n])
 			s.bufMutex.Unlock()
 			if writeErr != nil {
-				if writeErr == io.EOF {
-					break
-				}
-
 				s.errMutex.Lock()
-				s.err = writeErr
+				s.err = fmt.Errorf("handleReader failed (connection now useless) because of STDIN: %v", writeErr)
 				s.errMutex.Unlock()
 
 				break
@@ -39,13 +35,11 @@ func handleReader(s *session) {
 		}
 
 		if readErr != nil {
-			if readErr == io.EOF {
-				break
-			}
-
 			s.errMutex.Lock()
-			s.err = readErr
+			s.err = fmt.Errorf("handleReader failed (connection now useless) because of STDOUT: %v", readErr)
 			s.errMutex.Unlock()
+
+			break
 		}
 
 		if n == 0 {
@@ -63,6 +57,7 @@ func handleReader(s *session) {
 }
 
 type session struct {
+	conn      net.Conn
 	client    *ssh.Client
 	session   *ssh.Session
 	config    *ssh.ClientConfig
@@ -104,6 +99,7 @@ func (s *session) connect() error {
 	d := net.Dialer{
 		Timeout:   s.config.Timeout,
 		KeepAlive: s.config.Timeout,
+		Deadline:  time.Now().Add(s.config.Timeout),
 	}
 
 	conn, err := d.Dial("tcp", s.addr)
@@ -111,18 +107,24 @@ func (s *session) connect() error {
 		return err
 	}
 
+	conn.SetDeadline(time.Now().Add(s.config.Timeout))
 	c, chans, reqs, err := ssh.NewClientConn(conn, s.addr, s.config)
 	if err != nil {
 		return err
 	}
 
+	conn.SetDeadline(time.Now().Add(s.config.Timeout))
 	client := ssh.NewClient(c, chans, reqs)
 
+	conn.SetDeadline(time.Now().Add(s.config.Timeout))
 	session, err := client.NewSession()
 	if err != nil {
 		return err
 	}
 
+	conn.SetDeadline(time.Time{})
+
+	s.conn = conn
 	s.client = client
 	s.session = session
 	s.connected = true
@@ -155,15 +157,19 @@ func (s *session) getShell() error {
 		ssh.TTY_OP_OSPEED: 14400,
 	}
 
+	s.conn.SetDeadline(time.Now().Add(s.config.Timeout))
 	err = s.session.RequestPty("vt100", 65536, 65536, modes)
 	if err != nil {
 		return err
 	}
 
+	s.conn.SetDeadline(time.Now().Add(s.config.Timeout))
 	err = s.session.Shell()
 	if err != nil {
 		return err
 	}
+
+	s.conn.SetDeadline(time.Time{})
 
 	s.stdout = stdout
 	s.stdin = stdin
@@ -217,6 +223,12 @@ func (s *session) close() error {
 	if s.client != nil {
 		s.client.Close()
 		s.client = nil
+	}
+
+	if s.conn != nil {
+		s.conn.SetDeadline(time.Now().Add(s.config.Timeout))
+		s.conn.Close()
+		s.conn = nil
 	}
 
 	if s.quit != nil {
