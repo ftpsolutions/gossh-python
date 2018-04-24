@@ -1,16 +1,33 @@
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+from builtins import *
+from builtins import object, str
 from sys import version as python_version
 from threading import RLock
 
-from common import handle_exception
+from future import standard_library
 
-if 'pypy' not in python_version.strip().lower():
-    from py2.gossh_python import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
+from .common import handle_exception
+
+standard_library.install_aliases()
+
+
+is_pypy = 'pypy' in python_version.lower()
+version = tuple([int(x) for x in python_version.strip().split()[0].split('.')])
+
+# needed for CFFI under Python2
+if version < (3, 0, 0):
+    from past.types.oldstr import oldstr as str
+
+if not is_pypy and version < (3, 0, 0):  # for Python2
+    from .py2.gossh_python import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
 else:
-    from cffi.gossh_python import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
+    from .cffi.gossh_python import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
 
     SetPyPy()
 
-    print 'WARNING: PyPy detected- be prepared for very odd behaviour'
+    print('WARNING: PyPy detected- be prepared for very odd behaviour')
 
 
 _new_session_lock = RLock()
@@ -38,7 +55,7 @@ class RPCSession(object):
         return '{0}(session_id={1}, {2})'.format(
             self.__class__.__name__,
             repr(self._session_id),
-            ', '.join('{0}={1}'.format(k, repr(v)) for k, v in self._kwargs.iteritems())
+            ', '.join('{0}={1}'.format(k, repr(v)) for k, v in list(self._kwargs.items()))
         )
 
     def connect(self):
@@ -53,7 +70,9 @@ class RPCSession(object):
         return handle_exception(RPCRead, (self._session_id, size), self)
 
     def write(self, data):
-        return handle_exception(RPCWrite, (self._session_id, data.encode('ascii')), self)
+        data = str(data)
+
+        return handle_exception(RPCWrite, (self._session_id, data), self)
 
     def close(self):
         return handle_exception(RPCClose, (self._session_id, ), self)
