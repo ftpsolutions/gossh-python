@@ -1,17 +1,20 @@
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
-from builtins import *
-import unittest
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import gc
+import unittest
+from builtins import *
 
 from hamcrest import assert_that, equal_to, greater_than_or_equal_to
 from mock import call, patch
 
+from future import standard_library
+
 from .rpc_session import RPCSession, create_session
+
+standard_library.install_aliases()
+
+
 
 
 class SessionTest(unittest.TestCase):
@@ -138,7 +141,13 @@ class ConstructorsTest(unittest.TestCase):
         assert_that(
             py_session_constructor.mock_calls,
             equal_to([
-                call(hostname=u'some_hostname', password='some_password', port='22', session_id=-1, timeout='5', username='some_username')
+                call(
+                    hostname=u'some_hostname',
+                    password='some_password',
+                    port='22',
+                    session_id=-1,
+                    timeout='5',
+                    username='some_username')
             ])
         )
 
