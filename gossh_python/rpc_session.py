@@ -63,8 +63,10 @@ class RPCSession(object):
             RPCConnect, (self._session_id,), self
         )
 
-    def get_shell(self):
-        return handle_exception(RPCGetShell, (self._session_id, ), self)
+    def get_shell(self, terminal=None, height=65536, width=65536):
+        terminal = terminal if terminal is not None else 'dumb'
+
+        return handle_exception(RPCGetShell, (self._session_id, terminal, height, width), self)
 
     def read(self, size=1024):
         return handle_exception(RPCRead, (self._session_id, size), self)

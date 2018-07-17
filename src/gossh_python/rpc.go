@@ -90,7 +90,7 @@ func RPCConnect(sessionID uint64) error {
 }
 
 // RPCGetShell gets a shell
-func RPCGetShell(sessionID uint64) error {
+func RPCGetShell(sessionID uint64, terminal string, height, width int) error {
 	if !GetPyPy() {
 		tState := releaseGIL()
 		defer reacquireGIL(tState)
@@ -113,7 +113,7 @@ func RPCGetShell(sessionID uint64) error {
 	}(val)
 
 	if ok {
-		err = val.getShell()
+		err = val.getShell(terminal, height, width)
 	} else {
 		err = fmt.Errorf("sessionID %v does not exist", sessionID)
 	}

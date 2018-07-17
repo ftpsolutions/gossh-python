@@ -138,7 +138,7 @@ func (s *session) connect() error {
 	return nil
 }
 
-func (s *session) getShell() error {
+func (s *session) getShell(terminal string, height, width int) error {
 	var err error
 
 	stdout, err := s.session.StdoutPipe()
@@ -158,7 +158,7 @@ func (s *session) getShell() error {
 	}
 
 	s.conn.SetDeadline(time.Now().Add(s.config.Timeout))
-	err = s.session.RequestPty("vt100", 65536, 65536, modes)
+	err = s.session.RequestPty(terminal, height, width, modes)
 	if err != nil {
 		return err
 	}

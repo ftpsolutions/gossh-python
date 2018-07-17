@@ -15,8 +15,6 @@ from .rpc_session import RPCSession, create_session
 standard_library.install_aliases()
 
 
-
-
 class SessionTest(unittest.TestCase):
     def setUp(self):
         self._subject = RPCSession(
@@ -51,7 +49,7 @@ class SessionTest(unittest.TestCase):
         assert_that(
             rpc_call.mock_calls,
             equal_to([
-                call(0)
+                call(0, 'dumb', 65536, 65536)
             ])
         )
 
