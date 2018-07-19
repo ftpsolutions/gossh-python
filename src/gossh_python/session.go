@@ -74,11 +74,27 @@ type session struct {
 }
 
 func newSession(hostname, username, password string, port, timeout int) session {
+	config := ssh.Config{}
+
+	config.SetDefaults()
+
+	config.Ciphers = append(
+		config.Ciphers,
+		"aes128-cbc",
+		"3des-cbc",
+		"aes256-cbc",
+		"twofish256-cbc",
+		"twofish-cbc",
+		"twofish128-cbc",
+		"blowfish-cbc",
+	)
+
 	return session{
 		client:  nil,
 		session: nil,
 		config: &ssh.ClientConfig{
-			User: username,
+			Config: config,
+			User:   username,
 			Auth: []ssh.AuthMethod{
 				ssh.Password(password),
 			},
