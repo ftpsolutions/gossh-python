@@ -98,7 +98,7 @@ To create an SSH session in Python do the following:
 ```
 import time
 
-from gossh_python import create_ssh_session
+from gossh_python import create_session
 
 session = create_session(
     hostname='1.2.3.4',
@@ -114,7 +114,7 @@ session.write('uname -a\n')
 
 time.sleep(5)
 
-print session.read()
+print(session.read())
 
 session.close()
 ```
