@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+include gossh_python/cffi/_gossh_python.so
+include gossh_python/py2/gossh_python.so
