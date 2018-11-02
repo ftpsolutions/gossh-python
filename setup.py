@@ -23,7 +23,7 @@ class my_build_py(build_py):
 
 setuptools.setup(
     name="gossh-python",
-    version="0.0.1",
+    version="0.2.0",
 
     # The project's main homepage.
     url='https://github.com/ftpsolutions/gossh-python',
@@ -48,9 +48,9 @@ setuptools.setup(
     include_package_data=True,
 
     install_requires=[
-        'cffi',
-        'future',
-        'python-dateutil'
+        'cffi==1.11.5',
+        'future==0.17.1',
+        'python-dateutil==2.7.5'
     ],
 
     # Ensures that distributable copies are platform-specific and not universal
