@@ -16,3 +16,7 @@ prebuilt
 .vscode
 main.go
 src/golang.org
+build/
+dist/
+gossh_python.egg-info/
+.DS_Store

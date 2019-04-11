@@ -1,0 +1,5 @@
+include LICENSE
+include README.md
+include build.sh
+recursive-include src/gossh_python *
+recursive-include gossh_python *.so
