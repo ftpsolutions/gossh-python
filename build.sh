@@ -61,7 +61,7 @@ echo ""
 SHARED_OBJ_DIR=/usr/local/lib/gopy/
 echo "copying shared objects to ${SHARED_OBJ_DIR}"
 mkdir -p ${SHARED_OBJ_DIR}
-cp gosnmp_python/py2/gossh_python_go_go.so ${SHARED_OBJ_DIR}
+cp gossh_python/py2/gossh_python_go_go.so ${SHARED_OBJ_DIR}
 
 # gopy doesn't seem to support Python3 as yet
 # echo "build gossh_python bindings for py3"

@@ -119,3 +119,6 @@ print(session.read())
 session.close()
 ```
  
+To test the build in a docker container
+
+    ./test.sh
