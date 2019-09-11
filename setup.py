@@ -23,7 +23,7 @@ class my_build_py(build_py):
 
 setuptools.setup(
     name="gossh-python",
-    version="0.2.1",
+    version="0.2.2",
 
     # The project's main homepage.
     url='https://github.com/ftpsolutions/gossh-python',

@@ -20,3 +20,10 @@ build/
 dist/
 gossh_python.egg-info/
 .DS_Store
+Makefile
+go.py
+build.py
+.python-version
+scratch.py
+.eggs
+*VirtualEnv*
