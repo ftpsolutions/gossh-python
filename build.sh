@@ -29,19 +29,19 @@ fi
 
 if [[ "$1" != "fast" ]]; then
     echo "building gossh"
-    go build -x -a golang.org/x/crypto/ssh
-    echo ""
-
-    echo "installing gopy"
-    go install -i github.com/go-python/gopy
+    go build -x -a -mod readonly golang.org/x/crypto/ssh
     echo ""
 
     echo "building gopy"
-    go build -x -a github.com/go-python/gopy
+    go build -x -a -mod readonly github.com/go-python/gopy
+    echo ""
+
+    echo "installing gopy"
+    go install -i -mod readonly github.com/go-python/gopy
     echo ""
 
     echo "building gossh_python"
-    go build -x -a gossh_python/gossh_python_go
+    go build -x -a -mod readonly gossh_python/gossh_python_go
     echo ""
 
     # Use a specific version!

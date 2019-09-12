@@ -22,7 +22,9 @@ trap finish EXIT
 
 IMAGE_TAG=gossh_python_test_build-${CONTAINER_NAME}
 
-docker build --tag ${IMAGE_TAG} -f Dockerfile_test_build .
+if [ -z "${SKIP_BUILD}" ]; then
+    docker build --tag ${IMAGE_TAG} -f Dockerfile_test_build .
+fi
 
 DOCKER_CMD=py.test
 if [ "$#" -gt 0 ]; then
