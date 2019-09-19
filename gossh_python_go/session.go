@@ -83,10 +83,16 @@ func newSession(hostname, username, password string, port, timeout int) session 
 		"aes128-cbc",
 		"3des-cbc",
 		"aes256-cbc",
+		"aes128-cbc",
 		"twofish256-cbc",
 		"twofish-cbc",
 		"twofish128-cbc",
 		"blowfish-cbc",
+	)
+
+	config.KeyExchanges = append(
+		config.KeyExchanges,
+		"diffie-hellman-group1-sha1",
 	)
 
 	return session{
