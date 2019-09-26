@@ -18,8 +18,8 @@ Right now I'm still working on how to put it all together as a Python module, so
 
 #### Prerequisites
 
-* Go 1.9 or Go 1.10
-* Python 2.7+, Python 3.5+, PyPy 5.10+ or PyPy3 5.10+
+* Go 1.13
+* Python 2.7+
 * pip
 * virtualenvwrapper
 * pkgconfig/pkg-config
@@ -119,3 +119,6 @@ print(session.read())
 session.close()
 ```
  
+To test the build in a docker container
+
+    ./test.sh

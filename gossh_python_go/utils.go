@@ -1,4 +1,4 @@
-package gossh_python
+package gossh_python_go
 
 // #cgo pkg-config: python2
 // #include <Python.h>

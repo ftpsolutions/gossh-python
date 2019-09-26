@@ -22,13 +22,14 @@ if version < (3, 0, 0):
     from past.types.oldstr import oldstr as str
 
 if not is_pypy and version < (3, 0, 0):  # for Python2
-    from .py2.gossh_python import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
+    from .py2.gossh_python_go import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
 else:
-    from .cffi.gossh_python import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
-
-    SetPyPy()
-
-    print('WARNING: PyPy or Python3 detected, will use CFFI- be prepared for very odd behaviour')
+    raise ValueError('PyPy and Python3 is not supported. Waiting for gopy CFFI support')
+#     from .cffi.gossh_python import SetPyPy, NewRPCSession, RPCConnect, RPCGetShell, RPCRead, RPCWrite, RPCClose
+#
+#     SetPyPy()
+#
+#     print('WARNING: PyPy or Python3 detected, will use CFFI- be prepared for very odd behaviour')
 
 
 _new_session_lock = RLock()

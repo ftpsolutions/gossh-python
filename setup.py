@@ -23,7 +23,7 @@ class my_build_py(build_py):
 
 setuptools.setup(
     name="gossh-python",
-    version="0.2.1",
+    version="0.2.3",
 
     # The project's main homepage.
     url='https://github.com/ftpsolutions/gossh-python',
@@ -46,6 +46,9 @@ setuptools.setup(
         '': ['*.so'],
     },
     include_package_data=True,
+
+    # Force the egg to unzip
+    zip_safe=False,
 
     install_requires=[
         'cffi==1.11.5',

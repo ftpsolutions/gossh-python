@@ -1,5 +1,8 @@
 include LICENSE
 include README.md
 include build.sh
-recursive-include src/gossh_python *
-recursive-include gossh_python *.so
+recursive-include e2e_test *
+recursive-include gossh_python *
+recursive-include gossh_python_go *
+include go.mod
+include go.sum
