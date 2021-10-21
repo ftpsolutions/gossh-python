@@ -35,10 +35,8 @@ func handlePanic(extra string, sessionID uint64, s *session, err error) {
 
 // NewRPCSession creates a new session and returns the sessionID
 func NewRPCSession(hostname, username, password string, port, timeout int) uint64 {
-	if !GetPyPy() {
-		tState := releaseGIL()
-		defer reacquireGIL(tState)
-	}
+	tState := releaseGIL()
+	defer reacquireGIL(tState)
 
 	session := newSession(
 		hostname,
@@ -59,10 +57,8 @@ func NewRPCSession(hostname, username, password string, port, timeout int) uint6
 
 // RPCConnect connects
 func RPCConnect(sessionID uint64) error {
-	if !GetPyPy() {
-		tState := releaseGIL()
-		defer reacquireGIL(tState)
-	}
+	tState := releaseGIL()
+	defer reacquireGIL(tState)
 
 	var err error
 
@@ -91,10 +87,8 @@ func RPCConnect(sessionID uint64) error {
 
 // RPCGetShell gets a shell
 func RPCGetShell(sessionID uint64, terminal string, height, width int) error {
-	if !GetPyPy() {
-		tState := releaseGIL()
-		defer reacquireGIL(tState)
-	}
+	tState := releaseGIL()
+	defer reacquireGIL(tState)
 
 	var err error
 
@@ -123,10 +117,8 @@ func RPCGetShell(sessionID uint64, terminal string, height, width int) error {
 
 // RPCRead reads data
 func RPCRead(sessionID uint64, size int) (string, error) {
-	if !GetPyPy() {
-		tState := releaseGIL()
-		defer reacquireGIL(tState)
-	}
+	tState := releaseGIL()
+	defer reacquireGIL(tState)
 
 	var err error
 
@@ -157,10 +149,8 @@ func RPCRead(sessionID uint64, size int) (string, error) {
 
 // RPCWrite reads data
 func RPCWrite(sessionID uint64, data string) error {
-	if !GetPyPy() {
-		tState := releaseGIL()
-		defer reacquireGIL(tState)
-	}
+	tState := releaseGIL()
+	defer reacquireGIL(tState)
 
 	var err error
 
@@ -189,10 +179,8 @@ func RPCWrite(sessionID uint64, data string) error {
 
 // RPCClose closes
 func RPCClose(sessionID uint64) error {
-	if !GetPyPy() {
-		tState := releaseGIL()
-		defer reacquireGIL(tState)
-	}
+	tState := releaseGIL()
+	defer reacquireGIL(tState)
 
 	sessionMutex.Lock()
 	val, ok := sessions[sessionID]

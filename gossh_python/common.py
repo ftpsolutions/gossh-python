@@ -1,13 +1,3 @@
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-
-from builtins import *
-
-from future import standard_library
-
-standard_library.install_aliases()
-
-
 class GoRuntimeError(Exception):
     pass
 
@@ -15,9 +5,11 @@ class GoRuntimeError(Exception):
 def handle_exception(method, args, other=None):
     try:
         return method(*args)
-    except RuntimeError as e:
-        raise GoRuntimeError(
-            '{0} raised on Go side while calling {1} with args {2} from {3}'.format(
-                repr(e), repr(method), repr(args), repr(other)
-            )
-        )
+    except Exception as e:
+        e = e if not hasattr(e, "__cause__") and isinstance(e.__cause__, BaseException) else e.__cause__
+
+        new_args = ("attempt to call {} on the Go side raised {}".format("{}(*{})".format(repr(method), repr(args)), repr(e)),)
+
+        e.args = new_args
+
+        raise GoRuntimeError(e)

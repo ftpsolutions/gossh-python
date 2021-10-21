@@ -1,143 +1,81 @@
-## gossh-python
+# gossh-python
 
-The purpose of this module is to provide a Python interface to the Golang [ssh](https://golang.org/x/crypto/ssh) module.
+This library binds [crypto/ssh](https://pkg.go.dev/golang.org/x/crypto/ssh) for use in Python3
+using [gopy](https://github.com/go-python/gopy).
 
-It was made very easy with the help of the Golang [gopy](https://github.com/go-python/gopy) module.
+## Versions
 
-It has come about because I found Paramiko to be a bit unwieldy and have some odd behaviours under certain conditions (we connect to a lot
-of wireless devices that often have very poor connectivity); I've also done some testing with SSH2-Python but I think it's a bit too young (
-good performance when it worked, but odd behaviour that I couldn't explain from time-to-time, especially when comparing Python vs PyPy).
+All versions 1.0.0 and up support Python 3 only! If you need Python 2 support, check out the following:
 
-#### Versions
+- [https://github.com/ftpsolutions/gossh-python/tree/v0.91](https://github.com/ftpsolutions/gossh-python/tree/v0.91)
+- https://pypi.org/project/gossh-python/0.91/
 
-This version (0.91) is the last version to support Python 2; all versions after this have been subject to a refactor and support Python 3
-only.
+## Concept
 
-#### Limitations
+In the early days `gopy` was fairly limited in it's ability to track object allocation across the border of Go and Python.
 
-* Python command needs to be prefixed with GODEBUG=cgocheck=0 (or have that in the environment)
-* It's implemented in a very basic non-blocking approach (calls to .Read(size) will always finish instantly)
-* Seems to have some odd memory problems with PyPy (via CFFI); lots of locks and stuff to try and alleviate that
+As a result, our implementation is fairly naive- we only pass primitive types from Go to Python (nothing that comes by reference).
 
-#### How do I make use of this?
+Session are managed entirely on the Go side and identified with an integer- here are a few function signatures to demonstrate:
 
-Right now I'm still working on how to put it all together as a Python module, so here are the raw steps.
+- `NewRPCSession(hostname, username, password string, port, timeout int) uint64`
+- `RPCConnect(sessionID uint64) error`
+- `RPCGetShell(sessionID uint64, terminal string, height, width int) error`
+- `RPCRead(sessionID uint64, size int) (string, error)`
+- `RPCWrite(sessionID uint64, data string) error`
+- `RPCClose(sessionID uint64) error`
 
-#### Prerequisites
+The functions that return complex data do so in a special JSON-based format- at this point `gopy` does it's magic and those functions are
+made available to Python.
 
-* Go 1.13
-* Python 2.7+
-* pip
-* virtualenvwrapper
-* pkgconfig/pkg-config
+We then have `RPCSession` abstraction on the Python side that pulls things together in a class for convenience (saving you need the to keep
+track of the identifiers and handling deserialisation).
 
-#### Installation (from PyPI)
+## Weird gotchas
 
-* ```python -m pip install gossh-python```
+We're building for Python3 and we use a `python-config` script for Python3 however we're using a `python.pc` file from Python2.
 
-#### Installation (for prod)
+I dunno why this has to be this way, but it's the only way I can get the C Python API GIL lock/unlock calls to be available to
+Go (`C.PyEval_SaveThread()` and `C.PyEval_RestoreThread(tState)`).
 
-* ```python setup.py install```
+So if you're wondering why Python2 still comes into it here and there- that's why. Doesn't seem to cause any problems.
 
-#### Making a python wheel install file (for distribution)
+## Prerequisites
 
-* ```python setup.py bdist_wheel```
+- MacOS
+- CPython3.8+
+- virtualenv
+    - `pip install virtualenv`
+- pkgconfig
+    - `brew install pkg-config`
+- Docker
 
-#### Setup (for dev)
-
-* ```mkvirtualenvwrapper -p (/path/to/pypy) gossh-python```
-* ```pip install -r requirements.txt```
-* ```./build.sh```
-* ```GODEBUG=cgocheck=0 py.test -v```
-
-#### What's worth knowing if I want to further the development?
-
-* gopy doesn't like Go interfaces; so make sure you don't have any public (exported) interfaces
-    * this includes a struct with a public property that may eventually lead to an interface
-
-#### Example Go RPCSession usage (simple session ID, calls return strings)
-
-There's no real reason why you'd want to do this (just use x/crypto/ssh on it's own)- it's more for reference:
+## Install (from PyPI)
 
 ```
-package main
-
-import (
-	"gossh_python"
-	"fmt"
-    "time"
-)
-
-func main() {
-
-	sessionID := gossh_python.NewRPCSession(
-		"1.2.3.4",
-		"some_username",
-        "some_password",
-        22,
-		5,
-	)
-
-	err := gossh_python.RPCConnect(sessionID)
-	if err != nil {
-		panic(err)
-	}
-
-	err := gossh_python.RPCGethell(sessionID) // this starts a goroutine to read from session's STDOUT
-	if err != nil {
-		panic(err)
-	}
-
-	err := gossh_python.RPCWrite(sessionID, "uname -a\n")
-	if err != nil {
-		panic(err)
-	}
-
-    time.Sleep(time.Second * 5) // because .Read(size) is non-blocking, give the buffer some time to fill up
-
-	data, err := gossh_python.RPCRead(sessionID, 1024)
-    if err != nil {
-        panic(err)
-    }
-
-    fmt.Println(data)
-
-	err = gossh_python.RPCClose(sessionID) // stops the goroutine
-	if err != nil {
-		panic(err)
-	}
-
-}
+python -m pip install gossh-python
 ```
 
-#### Example Python usage (uses RPCSession underneath because of memory leaks between Go and Python with structs)
-
-To create an SSH session in Python do the following:
+## Setup
 
 ```
-import time
-
-from gossh_python import create_session
-
-session = create_session(
-    hostname='1.2.3.4',
-    username='some_username',
-    password='some_password',
-)
-
-session.connect()
-
-session.get_shell()
-
-session.write('uname -a\n')
-
-time.sleep(5)
-
-print(session.read())
-
-session.close()
+virtualenv -p $(which python3) venv
+source venv/bin/activate
+./fix_venv.sh
+pip install -r requirements-dev.txt
 ```
 
-To test the build in a docker container
+## Build
 
-    ./test.sh
+```
+source venv/bin/activate
+./native_build.sh
+```
+
+If you're deep in the grind and want to iterate faster, you can invoke:
+
+```
+./native_build.sh fast
+```
+
+This skips the setup (assuming you've already done that).
