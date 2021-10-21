@@ -4,7 +4,14 @@ The purpose of this module is to provide a Python interface to the Golang [ssh](
 
 It was made very easy with the help of the Golang [gopy](https://github.com/go-python/gopy) module.
 
-It has come about because I found Paramiko to be a bit unwieldy and have some odd behaviours under certain conditions (we connect to a lot of wireless devices that often have very poor connectivity); I've also done some testing with SSH2-Python but I think it's a bit too young (good performance when it worked, but odd behaviour that I couldn't explain from time-to-time, especially when comparing Python vs PyPy).
+It has come about because I found Paramiko to be a bit unwieldy and have some odd behaviours under certain conditions (we connect to a lot
+of wireless devices that often have very poor connectivity); I've also done some testing with SSH2-Python but I think it's a bit too young (
+good performance when it worked, but odd behaviour that I couldn't explain from time-to-time, especially when comparing Python vs PyPy).
+
+#### Versions
+
+This version (0.2.4) is the last version to support Python 2; all versions after this have been subject to a refactor and support Python 3
+only.
 
 #### Limitations
 
@@ -118,7 +125,7 @@ print(session.read())
 
 session.close()
 ```
- 
+
 To test the build in a docker container
 
     ./test.sh
