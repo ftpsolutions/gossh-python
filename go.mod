@@ -1,9 +1,7 @@
 module gossh_python_go
 
-go 1.13
+go 1.24.0
 
-require (
-	github.com/go-python/gopy v0.3.4
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/tools v0.1.7 // indirect
-)
+require golang.org/x/crypto v0.45.0
+
+require golang.org/x/sys v0.38.0 // indirect
